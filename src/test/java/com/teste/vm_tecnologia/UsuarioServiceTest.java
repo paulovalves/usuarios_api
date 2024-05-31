@@ -30,7 +30,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void salvarUsuarioComSucesso() throws UsuarioExisteException {
-        Usuario usuario = new Usuario(null, "usuario", "test@test.com", "test");
+        Usuario usuario = new Usuario("usuario", "test@test.com", "test");
 
         when(usuarioRepository.findByEmail(anyString())).thenReturn(null);
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
@@ -40,5 +40,18 @@ public class UsuarioServiceTest {
         assertNotNull(response);
         assertEquals("Usuário salvo com sucesso.", response.getMessage());
         assertEquals(usuario, response.getData());
+    }
+
+    @Test
+    public void salvarUsuarioComEmailJaExistente() {
+        Usuario usuario = new Usuario(
+                "usuario",
+                "test@test.com",
+                "test"
+        );
+
+        when(usuarioRepository.findByEmail(anyString())).thenReturn(usuario);
+
+        assertThrows(UsuarioExisteException.class, () -> usuarioService.save(usuario));
     }
 }
