@@ -4,7 +4,9 @@ import com.teste.vm_tecnologia.dto.UsuarioEntradaDTO;
 import com.teste.vm_tecnologia.dto.UsuarioSaidaDTO;
 import com.teste.vm_tecnologia.model.APIResponse;
 import com.teste.vm_tecnologia.model.Usuario;
-import com.teste.vm_tecnologia.model.exceptions.UsuarioExisteException;
+import com.teste.vm_tecnologia.model.enums.MessageEnum;
+import com.teste.vm_tecnologia.model.exceptions.UserNotFoundException;
+import com.teste.vm_tecnologia.model.exceptions.UsuarioNaoExisteException;
 import com.teste.vm_tecnologia.repository.UsuarioRepository;
 import com.teste.vm_tecnologia.service.UsuarioService;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -31,7 +35,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void salvarUsuarioComSucesso() throws UsuarioExisteException {
+    public void salvarUsuarioComSucesso() throws UsuarioNaoExisteException {
         UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO();
         usuarioEntradaDTO.setNome("Teste");
         usuarioEntradaDTO.setEmail("teste@teste.com");
@@ -58,9 +62,22 @@ public class UsuarioServiceTest {
 
         when(usuarioRepository.findByEmail(anyString())).thenReturn(usuario);
 
-        assertThrows(UsuarioExisteException.class, () -> usuarioService.save(usuarioEntradaDTO));
+        assertThrows(UsuarioNaoExisteException.class, () -> usuarioService.save(usuarioEntradaDTO));
     }
 
+    @Test
+    public void buscarUsuarioPeloIdSucesso() throws UserNotFoundException {
+        Long id = 1L;
+        Usuario usuario = new Usuario();
+        usuario.setId(id);
+
+        when(usuarioRepository.findById(anyLong())).thenReturn(Optional.of(usuario));
+
+        APIResponse<UsuarioSaidaDTO> response = usuarioService.findById(id);
+
+        assertNotNull(response);
+        assertEquals(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage(), response.getMessage());
+    }
     private Usuario mapToUsuario(UsuarioEntradaDTO usuarioEntradaDTO) {
         return new Usuario(
                 usuarioEntradaDTO.getNome(),
