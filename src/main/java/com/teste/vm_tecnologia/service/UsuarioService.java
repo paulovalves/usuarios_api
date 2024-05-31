@@ -5,7 +5,7 @@ import com.teste.vm_tecnologia.dto.UsuarioSaidaDTO;
 import com.teste.vm_tecnologia.model.APIResponse;
 import com.teste.vm_tecnologia.model.Usuario;
 import com.teste.vm_tecnologia.model.enums.MessageEnum;
-import com.teste.vm_tecnologia.model.exceptions.UserNotFoundException;
+import com.teste.vm_tecnologia.model.exceptions.UsuarioJaExisteException;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioNaoExisteException;
 import com.teste.vm_tecnologia.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +21,12 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     @Transactional(rollbackFor = Exception.class)
-    public APIResponse<UsuarioSaidaDTO> save(UsuarioEntradaDTO usuarioEntradaDTO) throws UsuarioNaoExisteException {
+    public APIResponse<UsuarioSaidaDTO> save(UsuarioEntradaDTO usuarioEntradaDTO) throws UsuarioJaExisteException {
 
         Usuario usuario = mapToUsuario(usuarioEntradaDTO);
         Usuario usuarioExistente = usuarioRepository.findByEmail(usuario.getEmail());
         if (usuarioExistente != null) {
-            throw new UsuarioNaoExisteException(MessageEnum.USUARIO_EXISTE.getMessage());
+            throw new UsuarioJaExisteException(MessageEnum.USUARIO_EXISTE.getMessage());
         }
         try {
             Usuario response = usuarioRepository.save(usuario);
@@ -39,16 +39,16 @@ public class UsuarioService {
         }
     }
 
-    public APIResponse<UsuarioSaidaDTO> findById(Long id) throws UserNotFoundException {
+    public APIResponse<UsuarioSaidaDTO> findById(Long id) throws UsuarioJaExisteException {
         try {
             Optional<Usuario> usuario = usuarioRepository.findById(id);
             if(usuario.isEmpty()) {
-                throw new UserNotFoundException(MessageEnum.USUARIO_NAO_ENCONTRADO.getMessage());
+                throw new UsuarioJaExisteException(MessageEnum.USUARIO_NAO_ENCONTRADO.getMessage());
             }
             UsuarioSaidaDTO usuarioSaidaDTO = mapToSaida(usuario);
             return new APIResponse<UsuarioSaidaDTO>(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage(), usuarioSaidaDTO);
-        } catch (UserNotFoundException e) {
-            throw new UserNotFoundException(e.getMessage());
+        } catch (UsuarioJaExisteException e) {
+            throw new UsuarioJaExisteException(e.getMessage());
         }
     }
 

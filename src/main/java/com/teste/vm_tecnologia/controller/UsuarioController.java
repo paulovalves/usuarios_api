@@ -4,10 +4,9 @@ import com.teste.vm_tecnologia.dto.UsuarioEntradaDTO;
 import com.teste.vm_tecnologia.dto.UsuarioSaidaDTO;
 import com.teste.vm_tecnologia.model.APIResponse;
 import com.teste.vm_tecnologia.model.enums.MessageEnum;
-import com.teste.vm_tecnologia.model.exceptions.UserNotFoundException;
+import com.teste.vm_tecnologia.model.exceptions.UsuarioJaExisteException;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioNaoExisteException;
 import com.teste.vm_tecnologia.service.UsuarioService;
-import jakarta.websocket.server.PathParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +26,7 @@ public class UsuarioController {
         try {
             APIResponse<UsuarioSaidaDTO> response = usuarioService.save(usuarioEntradaDTO);
            return new ResponseEntity<>(response, HttpStatus.CREATED);
-       } catch (UsuarioNaoExisteException e) {
+       } catch (UsuarioJaExisteException e) {
            return new ResponseEntity<>(
                    new APIResponse<>(
                            e.getMessage(),
@@ -47,7 +46,7 @@ public class UsuarioController {
         try {
             APIResponse<UsuarioSaidaDTO> response = usuarioService.findById(id);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (UserNotFoundException e) {
+        } catch (UsuarioJaExisteException e) {
             return new ResponseEntity<>(
                     new APIResponse<>(
                             MessageEnum.ERRO_BUSCAR_USUARIO.getMessage(),
