@@ -4,11 +4,15 @@ import com.teste.vm_tecnologia.dto.UsuarioEntradaDTO;
 import com.teste.vm_tecnologia.dto.UsuarioSaidaDTO;
 import com.teste.vm_tecnologia.model.APIResponse;
 import com.teste.vm_tecnologia.model.Usuario;
-import com.teste.vm_tecnologia.model.exceptions.UsuarioExisteException;
+import com.teste.vm_tecnologia.model.enums.MessageEnum;
+import com.teste.vm_tecnologia.model.exceptions.UserNotFoundException;
+import com.teste.vm_tecnologia.model.exceptions.UsuarioNaoExisteException;
 import com.teste.vm_tecnologia.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 public class UsuarioService {
@@ -17,23 +21,37 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     @Transactional(rollbackFor = Exception.class)
-    public APIResponse<UsuarioSaidaDTO> save(UsuarioEntradaDTO usuarioEntradaDTO) throws UsuarioExisteException {
+    public APIResponse<UsuarioSaidaDTO> save(UsuarioEntradaDTO usuarioEntradaDTO) throws UsuarioNaoExisteException {
 
         Usuario usuario = mapToUsuario(usuarioEntradaDTO);
         Usuario usuarioExistente = usuarioRepository.findByEmail(usuario.getEmail());
         if (usuarioExistente != null) {
-            throw new UsuarioExisteException("Já existe um usuário cadastrado com este e-mail.");
+            throw new UsuarioNaoExisteException(MessageEnum.USUARIO_EXISTE.getMessage());
         }
         try {
             Usuario response = usuarioRepository.save(usuario);
-            UsuarioSaidaDTO usuarioSaidaDTO = mapToSaida(response);
+            UsuarioSaidaDTO usuarioSaidaDTO = mapToSaida(Optional.of(response));
 
             return new APIResponse<>("Usuário salvo com sucesso.", usuarioSaidaDTO);
         } catch (Exception e) {
-            System.err.println("Erro ao salvar usuário: " + e.getMessage());
-            throw new RuntimeException("Error ao salvar o usuario: " + e.getMessage());
+            System.err.println(MessageEnum.ERRO_SALVAR_USUARIO + e.getMessage());
+            throw new RuntimeException(MessageEnum.ERRO_SALVAR_USUARIO.getMessage());
         }
     }
+
+    public APIResponse<UsuarioSaidaDTO> findById(Long id) throws UserNotFoundException {
+        try {
+            Optional<Usuario> usuario = usuarioRepository.findById(id);
+            if(usuario.isEmpty()) {
+                throw new UserNotFoundException(MessageEnum.USUARIO_NAO_ENCONTRADO.getMessage());
+            }
+            UsuarioSaidaDTO usuarioSaidaDTO = mapToSaida(usuario);
+            return new APIResponse<UsuarioSaidaDTO>(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage(), usuarioSaidaDTO);
+        } catch (UserNotFoundException e) {
+            throw new UserNotFoundException(e.getMessage());
+        }
+    }
+
     private Usuario mapToUsuario(UsuarioEntradaDTO usuarioEntradaDTO) {
         Usuario usuario = new Usuario();
         usuario.setNome(usuarioEntradaDTO.getNome());
@@ -42,11 +60,11 @@ public class UsuarioService {
         return usuario;
     }
 
-    private UsuarioSaidaDTO mapToSaida(Usuario usuario) {
+    private UsuarioSaidaDTO mapToSaida(Optional<Usuario> usuario) {
         UsuarioSaidaDTO usuarioSaidaDTO = new UsuarioSaidaDTO();
-        usuarioSaidaDTO.setId(usuario.getId());
-        usuarioSaidaDTO.setEmail(usuario.getEmail());
-        usuarioSaidaDTO.setNome(usuario.getNome());
+        usuarioSaidaDTO.setId(usuario.map(Usuario::getId).orElseThrow());
+        usuarioSaidaDTO.setEmail(usuario.map(Usuario::getEmail).orElseThrow());
+        usuarioSaidaDTO.setNome(usuario.map(Usuario::getNome).orElseThrow());
         return usuarioSaidaDTO;
     }
 }
