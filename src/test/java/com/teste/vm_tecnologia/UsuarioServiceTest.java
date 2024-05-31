@@ -1,5 +1,7 @@
 package com.teste.vm_tecnologia;
 
+import com.teste.vm_tecnologia.dto.UsuarioEntradaDTO;
+import com.teste.vm_tecnologia.dto.UsuarioSaidaDTO;
 import com.teste.vm_tecnologia.model.APIResponse;
 import com.teste.vm_tecnologia.model.Usuario;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioExisteException;
@@ -30,28 +32,40 @@ public class UsuarioServiceTest {
 
     @Test
     public void salvarUsuarioComSucesso() throws UsuarioExisteException {
-        Usuario usuario = new Usuario("usuario", "test@test.com", "test");
+        UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO();
+        usuarioEntradaDTO.setNome("Teste");
+        usuarioEntradaDTO.setEmail("teste@teste.com");
+        usuarioEntradaDTO.setSenha("teste");
 
+        Usuario usuario = mapToUsuario(usuarioEntradaDTO);
         when(usuarioRepository.findByEmail(anyString())).thenReturn(null);
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
-        APIResponse<Usuario> response = usuarioService.save(usuario);
+        APIResponse<UsuarioSaidaDTO> response = usuarioService.save(usuarioEntradaDTO);
 
         assertNotNull(response);
         assertEquals("Usuário salvo com sucesso.", response.getMessage());
-        assertEquals(usuario, response.getData());
     }
 
     @Test
     public void salvarUsuarioComEmailJaExistente() {
-        Usuario usuario = new Usuario(
-                "usuario",
-                "test@test.com",
-                "test"
-        );
+        UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO();
+        usuarioEntradaDTO.setNome("Teste");
+        usuarioEntradaDTO.setEmail("teste@teste.com");
+        usuarioEntradaDTO.setSenha("teste");
+
+        Usuario usuario = mapToUsuario(usuarioEntradaDTO);
 
         when(usuarioRepository.findByEmail(anyString())).thenReturn(usuario);
 
-        assertThrows(UsuarioExisteException.class, () -> usuarioService.save(usuario));
+        assertThrows(UsuarioExisteException.class, () -> usuarioService.save(usuarioEntradaDTO));
+    }
+
+    private Usuario mapToUsuario(UsuarioEntradaDTO usuarioEntradaDTO) {
+        return new Usuario(
+                usuarioEntradaDTO.getNome(),
+                usuarioEntradaDTO.getEmail(),
+                usuarioEntradaDTO.getSenha()
+        );
     }
 }

@@ -1,5 +1,7 @@
 package com.teste.vm_tecnologia.controller;
 
+import com.teste.vm_tecnologia.dto.UsuarioEntradaDTO;
+import com.teste.vm_tecnologia.dto.UsuarioSaidaDTO;
 import com.teste.vm_tecnologia.model.APIResponse;
 import com.teste.vm_tecnologia.model.Usuario;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioExisteException;
@@ -24,9 +26,9 @@ public class UsuarioController {
     }
 
    @PostMapping("/salvar")
-    public ResponseEntity<Object> save(@RequestBody Usuario usuario) {
+    public ResponseEntity<APIResponse<UsuarioSaidaDTO>> save(@RequestBody UsuarioEntradaDTO usuarioEntradaDTO) {
         try {
-            APIResponse<Usuario> response = usuarioService.save(usuario);
+            APIResponse<UsuarioSaidaDTO> response = usuarioService.save(usuarioEntradaDTO);
            return new ResponseEntity<>(response, HttpStatus.CREATED);
        } catch (UsuarioExisteException e) {
            return new ResponseEntity<>(
