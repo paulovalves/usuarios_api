@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public abstract class UsuarioRepository implements JpaRepository<Usuario, Long> {
+    public abstract Usuario findByEmail(String email);
 }
