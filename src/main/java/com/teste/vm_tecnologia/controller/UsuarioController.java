@@ -46,7 +46,7 @@ public class UsuarioController {
         try {
             APIResponse<UsuarioSaidaDTO> response = usuarioService.findById(id);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (UsuarioJaExisteException e) {
+        } catch (UsuarioNaoExisteException e) {
             return new ResponseEntity<>(
                     new APIResponse<>(
                             MessageEnum.ERRO_BUSCAR_USUARIO.getMessage(),

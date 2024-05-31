@@ -39,16 +39,16 @@ public class UsuarioService {
         }
     }
 
-    public APIResponse<UsuarioSaidaDTO> findById(Long id) throws UsuarioJaExisteException {
+    public APIResponse<UsuarioSaidaDTO> findById(Long id) throws UsuarioNaoExisteException {
         try {
             Optional<Usuario> usuario = usuarioRepository.findById(id);
-            if(usuario.isEmpty()) {
-                throw new UsuarioJaExisteException(MessageEnum.USUARIO_NAO_ENCONTRADO.getMessage());
+            if (usuario.isEmpty() || usuario.get().getEmail() == null || usuario.get().getEmail().isEmpty()) {
+                throw new UsuarioNaoExisteException(MessageEnum.USUARIO_NAO_ENCONTRADO.getMessage());
             }
             UsuarioSaidaDTO usuarioSaidaDTO = mapToSaida(usuario);
-            return new APIResponse<UsuarioSaidaDTO>(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage(), usuarioSaidaDTO);
-        } catch (UsuarioJaExisteException e) {
-            throw new UsuarioJaExisteException(e.getMessage());
+            return new APIResponse<>(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage(), usuarioSaidaDTO);
+        } catch (UsuarioNaoExisteException e) {
+            throw new UsuarioNaoExisteException(e.getMessage());
         }
     }
 
