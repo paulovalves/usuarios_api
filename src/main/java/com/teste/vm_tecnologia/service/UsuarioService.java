@@ -26,14 +26,22 @@ public class UsuarioService {
     @Transactional(rollbackFor = Exception.class)
     public APIResponse<UsuarioSaidaDTO> save(UsuarioEntradaDTO usuarioEntradaDTO) throws UsuarioJaExisteException {
 
-        Usuario usuario = new Usuario(usuarioEntradaDTO);
+        Usuario usuario = Usuario.builder()
+                .nome(usuarioEntradaDTO.getNome())
+                .email(usuarioEntradaDTO.getEmail())
+                .senha(usuarioEntradaDTO.getSenha())
+                .build();
         Usuario usuarioExistente = usuarioRepository.findByEmail(usuario.getEmail());
         if (usuarioExistente != null) {
             throw new UsuarioJaExisteException(MessageEnum.USUARIO_EXISTE.getMessage());
         }
         try {
             Usuario response = usuarioRepository.save(usuario);
-            UsuarioSaidaDTO usuarioSaidaDTO = new UsuarioSaidaDTO(response);
+            UsuarioSaidaDTO usuarioSaidaDTO = UsuarioSaidaDTO.builder()
+                    .id(response.getId())
+                    .nome(response.getNome())
+                    .email(response.getEmail())
+                    .build();
 
             return new APIResponse<>("Usuário salvo com sucesso.", usuarioSaidaDTO);
         } catch (Exception e) {
@@ -48,7 +56,7 @@ public class UsuarioService {
             if (usuario.isEmpty() || usuario.get().getEmail() == null || usuario.get().getEmail().isEmpty()) {
                 throw new UsuarioNaoExisteException(MessageEnum.USUARIO_NAO_ENCONTRADO.getMessage());
             }
-            UsuarioSaidaDTO usuarioSaidaDTO = new UsuarioSaidaDTO(usuario);
+            UsuarioSaidaDTO usuarioSaidaDTO = UsuarioSaidaDTO.from(usuario.get());
             return new APIResponse<>(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage(), usuarioSaidaDTO);
         } catch (UsuarioNaoExisteException e) {
             throw new UsuarioNaoExisteException(e.getMessage());
@@ -59,7 +67,7 @@ public class UsuarioService {
         Pageable pageable = PageRequest.of(page, size);
         try {
             Page<Usuario> usuarios = usuarioRepository.findAll(pageable);
-            return usuarios.map(UsuarioSaidaDTO::new);
+            return usuarios.map(UsuarioSaidaDTO::from);
         } catch (Exception e) {
             System.err.println(MessageEnum.ERRO_BUSCAR_USUARIOS + e.getMessage());
             throw new RuntimeException(MessageEnum.ERRO_BUSCAR_USUARIOS.getMessage());

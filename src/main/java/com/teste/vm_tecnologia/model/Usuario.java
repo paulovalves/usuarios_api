@@ -2,10 +2,7 @@ package com.teste.vm_tecnologia.model;
 
 import com.teste.vm_tecnologia.dto.UsuarioEntradaDTO;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -20,6 +17,7 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "usuarios", schema = "public")
 public class Usuario implements Serializable {
 
@@ -43,15 +41,12 @@ public class Usuario implements Serializable {
     @JdbcTypeCode(SqlTypes.VARCHAR)
     private String senha;
 
-    public Usuario(String nome, String email, String senha) {
-        this.nome = nome;
-        this.email = email;
-        this.senha = senha;
+    public static Usuario from(UsuarioEntradaDTO usuarioEntradaDTO) {
+        return Usuario.builder()
+                .nome(usuarioEntradaDTO.getNome())
+                .email(usuarioEntradaDTO.getEmail())
+                .senha(usuarioEntradaDTO.getSenha())
+                .build();
     }
 
-    public Usuario(UsuarioEntradaDTO usuarioEntradaDTO) {
-        this.nome = usuarioEntradaDTO.getNome();
-        this.email = usuarioEntradaDTO.getEmail();
-        this.senha = usuarioEntradaDTO.getSenha();
-    }
 }

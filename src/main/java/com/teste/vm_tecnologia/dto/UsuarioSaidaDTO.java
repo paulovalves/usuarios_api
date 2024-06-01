@@ -1,30 +1,25 @@
 package com.teste.vm_tecnologia.dto;
 
 import com.teste.vm_tecnologia.model.Usuario;
-import lombok.NoArgsConstructor;
+import jdk.jshell.Snippet;
+import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.Optional;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class UsuarioSaidaDTO extends RepresentationModel<UsuarioSaidaDTO> {
+@AllArgsConstructor
+@Builder
+public class UsuarioSaidaDTO {
     private Long id;
     private String nome;
     private String email;
 
-    public UsuarioSaidaDTO(Usuario usuario) {
-        this.id = usuario.getId();
-        this.nome = usuario.getNome();
-        this.email = usuario.getEmail();
-    }
-
-    public UsuarioSaidaDTO(Optional<Usuario> usuario) {
-        this.id = usuario.map(Usuario::getId).orElse(null);
-        this.nome = usuario.map(Usuario::getNome).orElse(null);
-        this.email = usuario.map(Usuario::getEmail).orElse(null);
+    public static UsuarioSaidaDTO from(Usuario usuario) {
+        return UsuarioSaidaDTO.builder()
+                .id(usuario.getId())
+                .nome(usuario.getNome())
+                .email(usuario.getEmail())
+                .build();
     }
 }
