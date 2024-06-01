@@ -8,6 +8,7 @@ import com.teste.vm_tecnologia.dto.UsuarioSaidaDTO;
 import com.teste.vm_tecnologia.model.APIResponse;
 import com.teste.vm_tecnologia.model.enums.MessageEnum;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioJaExisteException;
+import com.teste.vm_tecnologia.model.exceptions.UsuarioNaoExisteException;
 import com.teste.vm_tecnologia.service.UsuarioService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.rmi.ServerRuntimeException;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @WebMvcTest(controllers = UsuarioController.class)
@@ -103,5 +106,23 @@ public class UserControllerTest {
                     }"""))
                 .andExpect(MockMvcResultMatchers.status().isInternalServerError())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.ERRO_SALVAR_USUARIO.getMessage()));
+    }
+
+    @Test
+    public void buscarUsuarioPeloIdSucesso() throws UsuarioNaoExisteException, Exception {
+        Long id = 1L;
+        UsuarioSaidaDTO usuarioSaidaDTO = new UsuarioSaidaDTO();
+        usuarioSaidaDTO.setId(id);
+        usuarioSaidaDTO.setEmail("teste@teste.com");
+
+        APIResponse<UsuarioSaidaDTO> response = new APIResponse<>(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage(), usuarioSaidaDTO);
+        Mockito.when(usuarioService.findById(anyLong())).thenReturn(response);
+
+        mockMvc.perform(get("/api/usuario/buscar/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage()));
+
+
     }
 }
