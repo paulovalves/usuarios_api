@@ -6,7 +6,9 @@ public enum MessageEnum {
     ERRO_BUSCAR_USUARIO("Erro ao buscar usuário."),
     SUCESSO_SALVAR_USUARIO("Usuário salvo com sucesso."),
     SUCESSO_BUSCAR_USUARIO("Usuário encontrado."),
-    USUARIO_NAO_ENCONTRADO("Usuário não foi encontrado.");
+    USUARIO_NAO_ENCONTRADO("Usuário não foi encontrado."),
+    SUCESSO_BUSCAR_USUARIOS("Usuários encontrados."),
+    ERRO_BUSCAR_USUARIOS("Erro ao buscar usuários.");
     private final String message;
 
     MessageEnum(String message) {
