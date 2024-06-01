@@ -44,11 +44,12 @@ public class UsuarioServiceTest {
 
     @Test
     public void salvarUsuarioComSucesso() throws UsuarioJaExisteException {
-        Usuario usuario = new Usuario();
-        usuario.setNome("Teste");
-        usuario.setEmail("teste@teste.com");
-        usuario.setSenha("teste");
-        UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO(usuario);
+        Usuario usuario = Usuario.builder()
+                .nome("Teste")
+                .email("teste@teste.com")
+                .senha("teste")
+                .build();
+        UsuarioEntradaDTO usuarioEntradaDTO = UsuarioEntradaDTO.from(usuario);
 
         when(usuarioRepository.findByEmail(anyString())).thenReturn(null);
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
@@ -61,11 +62,12 @@ public class UsuarioServiceTest {
 
     @Test
     public void salvarUsuarioComEmailJaExistente() {
-        UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO(new Usuario(
-                "Teste", "teste@teste.com", "Teste"
-        ));
-
-        Usuario usuario = new Usuario(usuarioEntradaDTO);
+        Usuario usuario = Usuario.builder()
+                .nome("Teste")
+                .email("teste@teste.com")
+                .senha("teste")
+                .build();
+        UsuarioEntradaDTO usuarioEntradaDTO = UsuarioEntradaDTO.from(usuario);
 
         when(usuarioRepository.findByEmail(anyString())).thenReturn(usuario);
 

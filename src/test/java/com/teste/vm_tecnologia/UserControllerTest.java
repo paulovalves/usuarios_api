@@ -157,7 +157,7 @@ public class UserControllerTest {
         );
 
         Page<Usuario> response = new PageImpl<>(usuarios, pageable, usuarios.size());
-        var saida = response.map(UsuarioSaidaDTO::new);
+        var saida = response.map(UsuarioSaidaDTO::from);
         when(usuarioService.findAll(anyInt(),anyInt())).thenReturn(saida);
 
         mockMvc.perform(get("/api/usuario/buscar")
@@ -174,7 +174,7 @@ public class UserControllerTest {
         List<Usuario> usuarios = List.of();
 
         Page<Usuario> response = new PageImpl<>(usuarios, pageable, 0);
-        var saida = response.map(UsuarioSaidaDTO::new);
+        var saida = response.map(UsuarioSaidaDTO::from);
         when(usuarioService.findAll(anyInt(), anyInt())).thenReturn(saida);
 
         mockMvc.perform(get("/api/usuario/buscar")
