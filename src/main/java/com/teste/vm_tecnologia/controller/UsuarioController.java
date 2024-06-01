@@ -7,6 +7,7 @@ import com.teste.vm_tecnologia.model.enums.MessageEnum;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioJaExisteException;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioNaoExisteException;
 import com.teste.vm_tecnologia.service.UsuarioService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -64,5 +65,30 @@ public class UsuarioController {
             );
         }
    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<APIResponse<Page<UsuarioSaidaDTO>>> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "2") int size) {
+        try {
+            var response = usuarioService.findAll(page, size);
+            return new ResponseEntity<>(
+                    new APIResponse<>(
+                            MessageEnum.SUCESSO_BUSCAR_USUARIOS.getMessage(),
+                            response
+                    ),
+                    HttpStatus.OK
+            );
+
+        } catch (Exception e) {
+            return new ResponseEntity<>(
+                    new APIResponse<>(
+                            MessageEnum.ERRO_BUSCAR_USUARIOS.getMessage(),
+                            null
+                    ),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 
 }
