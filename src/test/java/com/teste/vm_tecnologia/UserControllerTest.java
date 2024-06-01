@@ -21,6 +21,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.rmi.ServerRuntimeException;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -78,5 +80,28 @@ public class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.ERRO_SALVAR_USUARIO.getMessage())
         );
+    }
+
+    @Test
+    public void SalvarUsuarioComFalhaRetornaInteralServerError() throws UsuarioJaExisteException, Exception {
+        UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO();
+        usuarioEntradaDTO.setNome("Teste");
+        usuarioEntradaDTO.setEmail("teste@teste.com");
+        usuarioEntradaDTO.setSenha("teste");
+
+        Mockito.when(usuarioService.save(any(UsuarioEntradaDTO.class))).thenThrow(
+                new RuntimeException(MessageEnum.ERRO_SALVAR_USUARIO.getMessage())
+        );
+
+        mockMvc.perform(post("/api/usuario/salvar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "nome": "Teste",
+                        "email": "teste@teste.com",
+                        "senha": "teste"
+                    }"""))
+                .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.ERRO_SALVAR_USUARIO.getMessage()));
     }
 }
