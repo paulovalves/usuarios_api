@@ -6,6 +6,7 @@ import com.teste.vm_tecnologia.controller.UsuarioController;
 import com.teste.vm_tecnologia.dto.UsuarioEntradaDTO;
 import com.teste.vm_tecnologia.dto.UsuarioSaidaDTO;
 import com.teste.vm_tecnologia.model.APIResponse;
+import com.teste.vm_tecnologia.model.Usuario;
 import com.teste.vm_tecnologia.model.enums.MessageEnum;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioJaExisteException;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioNaoExisteException;
@@ -18,14 +19,20 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.rmi.ServerRuntimeException;
+import java.util.Arrays;
+import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -138,6 +145,25 @@ public class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.ERRO_BUSCAR_USUARIO.getMessage()));
 
+    }
+
+    @Test
+    public void buscarTodosUsuariosSucesso() throws Exception {
+        int page = 0;
+        int size = 10;
+        Pageable pageable = PageRequest.of(page, size);
+        List<Usuario> usuarios = Arrays.asList(
+                new Usuario(), new Usuario(), new Usuario()
+        );
+
+        Page<Usuario> response = new PageImpl<>(usuarios, pageable, usuarios.size());
+        var saida = response.map(UsuarioSaidaDTO::new);
+        when(usuarioService.findAll(anyInt(),anyInt())).thenReturn(saida);
+
+        mockMvc.perform(get("/api/usuario/buscar")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.SUCESSO_BUSCAR_USUARIOS.getMessage()));
     }
 
 
