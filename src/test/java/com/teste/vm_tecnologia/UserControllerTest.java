@@ -166,5 +166,23 @@ public class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.SUCESSO_BUSCAR_USUARIOS.getMessage()));
     }
 
+    @Test
+    public void buscarTodosUsuariosListaVazia() throws Exception {
+        int page = 0;
+        int size = 10;
+        Pageable pageable = PageRequest.of(page, size);
+        List<Usuario> usuarios = List.of();
+
+        Page<Usuario> response = new PageImpl<>(usuarios, pageable, 0);
+        var saida = response.map(UsuarioSaidaDTO::new);
+        when(usuarioService.findAll(anyInt(), anyInt())).thenReturn(saida);
+
+        mockMvc.perform(get("/api/usuario/buscar")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.LISTA_VAZIA.getMessage()));
+
+    }
+
 
 }
