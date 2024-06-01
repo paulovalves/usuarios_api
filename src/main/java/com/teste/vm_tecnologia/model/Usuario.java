@@ -1,5 +1,6 @@
 package com.teste.vm_tecnologia.model;
 
+import com.teste.vm_tecnologia.dto.UsuarioEntradaDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -46,5 +47,11 @@ public class Usuario implements Serializable {
         this.nome = nome;
         this.email = email;
         this.senha = senha;
+    }
+
+    public Usuario(UsuarioEntradaDTO usuarioEntradaDTO) {
+        this.nome = usuarioEntradaDTO.getNome();
+        this.email = usuarioEntradaDTO.getEmail();
+        this.senha = usuarioEntradaDTO.getSenha();
     }
 }

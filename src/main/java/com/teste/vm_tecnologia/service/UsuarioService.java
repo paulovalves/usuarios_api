@@ -26,14 +26,14 @@ public class UsuarioService {
     @Transactional(rollbackFor = Exception.class)
     public APIResponse<UsuarioSaidaDTO> save(UsuarioEntradaDTO usuarioEntradaDTO) throws UsuarioJaExisteException {
 
-        Usuario usuario = mapToUsuario(usuarioEntradaDTO);
+        Usuario usuario = new Usuario(usuarioEntradaDTO);
         Usuario usuarioExistente = usuarioRepository.findByEmail(usuario.getEmail());
         if (usuarioExistente != null) {
             throw new UsuarioJaExisteException(MessageEnum.USUARIO_EXISTE.getMessage());
         }
         try {
             Usuario response = usuarioRepository.save(usuario);
-            UsuarioSaidaDTO usuarioSaidaDTO = mapToSaida(Optional.of(response));
+            UsuarioSaidaDTO usuarioSaidaDTO = new UsuarioSaidaDTO(response);
 
             return new APIResponse<>("Usuário salvo com sucesso.", usuarioSaidaDTO);
         } catch (Exception e) {
@@ -55,7 +55,6 @@ public class UsuarioService {
         }
     }
 
-    // findAll page
     public Page<UsuarioSaidaDTO> findAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         try {
@@ -65,20 +64,5 @@ public class UsuarioService {
             System.err.println(MessageEnum.ERRO_BUSCAR_USUARIOS + e.getMessage());
             throw new RuntimeException(MessageEnum.ERRO_BUSCAR_USUARIOS.getMessage());
         }
-    }
-    private Usuario mapToUsuario(UsuarioEntradaDTO usuarioEntradaDTO) {
-        Usuario usuario = new Usuario();
-        usuario.setNome(usuarioEntradaDTO.getNome());
-        usuario.setEmail(usuarioEntradaDTO.getEmail());
-        usuario.setSenha(usuarioEntradaDTO.getSenha());
-        return usuario;
-    }
-
-    private UsuarioSaidaDTO mapToSaida(Optional<Usuario> usuario) {
-        UsuarioSaidaDTO usuarioSaidaDTO = new UsuarioSaidaDTO();
-        usuarioSaidaDTO.setId(usuario.map(Usuario::getId).orElseThrow());
-        usuarioSaidaDTO.setEmail(usuario.map(Usuario::getEmail).orElseThrow());
-        usuarioSaidaDTO.setNome(usuario.map(Usuario::getNome).orElseThrow());
-        return usuarioSaidaDTO;
     }
 }
