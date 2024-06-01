@@ -2,6 +2,7 @@ package com.teste.vm_tecnologia.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -41,8 +42,8 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers("/usuario/salvar").anonymous()
-                        .requestMatchers("/usuario/buscar", "/usuario/buscar/{id}").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/usuario/buscar", "/api/usuario/buscar/{id}").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/usuario/salvar").anonymous()
                 ).httpBasic(httpBasic -> {});
         return http.build();
     }
