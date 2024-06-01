@@ -26,6 +26,7 @@ import java.rmi.ServerRuntimeException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -49,7 +50,7 @@ public class UserControllerTest {
         UsuarioSaidaDTO usuarioSaidaDTO = new UsuarioSaidaDTO();
         APIResponse<UsuarioSaidaDTO> response = new APIResponse<>("Usuário criado com sucesso.", usuarioSaidaDTO);
 
-        Mockito.when(usuarioService.save(any(UsuarioEntradaDTO.class))).thenReturn(response);
+        when(usuarioService.save(any(UsuarioEntradaDTO.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/usuario/salvar")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -70,7 +71,7 @@ public class UserControllerTest {
         usuarioEntradaDTO.setEmail("teste@teste.com");
         usuarioEntradaDTO.setSenha("teste");
 
-        Mockito.when(usuarioService.save(any(UsuarioEntradaDTO.class))).thenThrow(new UsuarioJaExisteException(MessageEnum.ERRO_SALVAR_USUARIO.getMessage()));
+        when(usuarioService.save(any(UsuarioEntradaDTO.class))).thenThrow(new UsuarioJaExisteException(MessageEnum.ERRO_SALVAR_USUARIO.getMessage()));
 
         mockMvc.perform(post("/api/usuario/salvar")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -92,7 +93,7 @@ public class UserControllerTest {
         usuarioEntradaDTO.setEmail("teste@teste.com");
         usuarioEntradaDTO.setSenha("teste");
 
-        Mockito.when(usuarioService.save(any(UsuarioEntradaDTO.class))).thenThrow(
+        when(usuarioService.save(any(UsuarioEntradaDTO.class))).thenThrow(
                 new RuntimeException(MessageEnum.ERRO_SALVAR_USUARIO.getMessage())
         );
 
@@ -116,7 +117,7 @@ public class UserControllerTest {
         usuarioSaidaDTO.setEmail("teste@teste.com");
 
         APIResponse<UsuarioSaidaDTO> response = new APIResponse<>(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage(), usuarioSaidaDTO);
-        Mockito.when(usuarioService.findById(anyLong())).thenReturn(response);
+        when(usuarioService.findById(anyLong())).thenReturn(response);
 
         mockMvc.perform(get("/api/usuario/buscar/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -125,4 +126,19 @@ public class UserControllerTest {
 
 
     }
+
+    @Test
+    public void buscarUsuarioPeloIdFalhaNaoEncontrado() throws UsuarioNaoExisteException, Exception {
+        Long id = 2L;
+
+        when(usuarioService.findById(anyLong())).thenThrow(new UsuarioNaoExisteException(MessageEnum.ERRO_BUSCAR_USUARIO.getMessage()));
+
+        mockMvc.perform(get("/api/usuario/buscar/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.ERRO_BUSCAR_USUARIO.getMessage()));
+
+    }
+
+
 }
