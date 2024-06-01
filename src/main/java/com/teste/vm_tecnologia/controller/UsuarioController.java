@@ -74,6 +74,8 @@ public class UsuarioController {
             var response = usuarioService.findAll(page, size);
             return new ResponseEntity<>(
                     new APIResponse<>(
+                            response.getContent().isEmpty() ?
+                                    MessageEnum.LISTA_VAZIA.getMessage() :
                             MessageEnum.SUCESSO_BUSCAR_USUARIOS.getMessage(),
                             response
                     ),
