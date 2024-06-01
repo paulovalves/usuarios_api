@@ -5,16 +5,24 @@ import com.teste.vm_tecnologia.dto.UsuarioSaidaDTO;
 import com.teste.vm_tecnologia.model.APIResponse;
 import com.teste.vm_tecnologia.model.Usuario;
 import com.teste.vm_tecnologia.model.enums.MessageEnum;
-import com.teste.vm_tecnologia.model.exceptions.UserNotFoundException;
+import com.teste.vm_tecnologia.model.exceptions.UsuarioJaExisteException;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioNaoExisteException;
 import com.teste.vm_tecnologia.repository.UsuarioRepository;
 import com.teste.vm_tecnologia.service.UsuarioService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,13 +43,13 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void salvarUsuarioComSucesso() throws UsuarioNaoExisteException {
-        UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO();
-        usuarioEntradaDTO.setNome("Teste");
-        usuarioEntradaDTO.setEmail("teste@teste.com");
-        usuarioEntradaDTO.setSenha("teste");
+    public void salvarUsuarioComSucesso() throws UsuarioJaExisteException {
+        Usuario usuario = new Usuario();
+        usuario.setNome("Teste");
+        usuario.setEmail("teste@teste.com");
+        usuario.setSenha("teste");
+        UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO(usuario);
 
-        Usuario usuario = mapToUsuario(usuarioEntradaDTO);
         when(usuarioRepository.findByEmail(anyString())).thenReturn(null);
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
@@ -53,23 +61,23 @@ public class UsuarioServiceTest {
 
     @Test
     public void salvarUsuarioComEmailJaExistente() {
-        UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO();
-        usuarioEntradaDTO.setNome("Teste");
-        usuarioEntradaDTO.setEmail("teste@teste.com");
-        usuarioEntradaDTO.setSenha("teste");
+        UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO(new Usuario(
+                "Teste", "teste@teste.com", "Teste"
+        ));
 
-        Usuario usuario = mapToUsuario(usuarioEntradaDTO);
+        Usuario usuario = new Usuario(usuarioEntradaDTO);
 
         when(usuarioRepository.findByEmail(anyString())).thenReturn(usuario);
 
-        assertThrows(UsuarioNaoExisteException.class, () -> usuarioService.save(usuarioEntradaDTO));
+        assertThrows(UsuarioJaExisteException.class, () -> usuarioService.save(usuarioEntradaDTO));
     }
 
     @Test
-    public void buscarUsuarioPeloIdSucesso() throws UserNotFoundException {
+    public void buscarUsuarioPeloIdSucesso() throws UsuarioNaoExisteException {
         Long id = 1L;
         Usuario usuario = new Usuario();
         usuario.setId(id);
+        usuario.setEmail("test@test.com");
 
         when(usuarioRepository.findById(anyLong())).thenReturn(Optional.of(usuario));
 
@@ -78,11 +86,32 @@ public class UsuarioServiceTest {
         assertNotNull(response);
         assertEquals(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage(), response.getMessage());
     }
-    private Usuario mapToUsuario(UsuarioEntradaDTO usuarioEntradaDTO) {
-        return new Usuario(
-                usuarioEntradaDTO.getNome(),
-                usuarioEntradaDTO.getEmail(),
-                usuarioEntradaDTO.getSenha()
+
+    @Test
+    public void buscarUsuarioPeloIdErro() throws UsuarioNaoExisteException {
+        Long id = 2L;
+
+        when(usuarioRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(UsuarioNaoExisteException.class, () -> usuarioService.findById(id));
+    }
+
+    @Test
+    public void buscarTodosUsuariosExiste() {
+        int page = 0;
+        int size = 10;
+        Pageable pageable = PageRequest.of(page, size);
+        List<Usuario> usuarios = Arrays.asList(
+                new Usuario(), new Usuario(), new Usuario()
         );
+
+        Page<Usuario> usuarioPagina = new PageImpl<>(usuarios, pageable, usuarios.size());
+
+        when(usuarioRepository.findAll(any(Pageable.class))).thenReturn(usuarioPagina);
+
+        Page<UsuarioSaidaDTO> response = usuarioService.findAll(page, size);
+
+        assertNotNull(response);
+        assertEquals(usuarios.size(), response.getContent().size());
     }
 }
