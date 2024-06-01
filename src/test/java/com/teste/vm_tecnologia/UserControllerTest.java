@@ -6,8 +6,10 @@ import com.teste.vm_tecnologia.controller.UsuarioController;
 import com.teste.vm_tecnologia.dto.UsuarioEntradaDTO;
 import com.teste.vm_tecnologia.dto.UsuarioSaidaDTO;
 import com.teste.vm_tecnologia.model.APIResponse;
+import com.teste.vm_tecnologia.model.enums.MessageEnum;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioJaExisteException;
 import com.teste.vm_tecnologia.service.UsuarioService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,5 +56,27 @@ public class UserControllerTest {
                         }"""))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Usuário criado com sucesso."));
+    }
+
+    @Test
+    public void SalvarUsuarioComFalhaRetornaBadRequest() throws UsuarioJaExisteException, Exception {
+        UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO();
+        usuarioEntradaDTO.setNome("Teste");
+        usuarioEntradaDTO.setEmail("teste@teste.com");
+        usuarioEntradaDTO.setSenha("teste");
+
+        Mockito.when(usuarioService.save(any(UsuarioEntradaDTO.class))).thenThrow(new UsuarioJaExisteException(MessageEnum.ERRO_SALVAR_USUARIO.getMessage()));
+
+        mockMvc.perform(post("/api/usuario/salvar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                            "nome": "Teste",
+                            "email": "teste@teste.com",
+                            "senha": "teste"
+                        }"""))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.ERRO_SALVAR_USUARIO.getMessage())
+        );
     }
 }
