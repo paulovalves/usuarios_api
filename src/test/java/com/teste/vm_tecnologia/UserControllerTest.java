@@ -240,11 +240,14 @@ public class UserControllerTest {
 
         Page<Usuario> response = new PageImpl<>(usuarios, pageable, usuarios.size());
         var saida = response.map(UsuarioSaidaDTO::from);
-        when(usuarioService.findAll(anyInt(),anyInt(),anyString())).thenReturn(saida);
+        when(usuarioService.findAll(anyInt(),anyInt(),anyString(),anyString())).thenReturn(saida);
 
         mockMvc.perform(get("/api/usuario/buscar")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", authHeader))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", authHeader)
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("nome", "teste"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.SUCESSO_BUSCAR_USUARIOS.getMessage()));
     }
@@ -259,11 +262,14 @@ public class UserControllerTest {
 
         Page<Usuario> response = new PageImpl<>(usuarios, pageable, 0);
         var saida = response.map(UsuarioSaidaDTO::from);
-        when(usuarioService.findAll(anyInt(), anyInt(), anyString())).thenReturn(saida);
+        when(usuarioService.findAll(anyInt(), anyInt(), anyString(), anyString())).thenReturn(saida);
 
         mockMvc.perform(get("/api/usuario/buscar")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", authHeader))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", authHeader)
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("nome", "teste"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.LISTA_VAZIA.getMessage()));
 
@@ -279,11 +285,14 @@ public class UserControllerTest {
 
         Page<Usuario> response = new PageImpl<>(usuarios, pageable, 0);
         var saida = response.map(UsuarioSaidaDTO::from);
-        when(usuarioService.findAll(anyInt(), anyInt(), anyString())).thenThrow(new UnauthorizedException(MessageEnum.USUARIO_NAO_AUTORIZADO.getMessage()));
+        when(usuarioService.findAll(anyInt(), anyInt(), anyString(),anyString())).thenThrow(new UnauthorizedException(MessageEnum.USUARIO_NAO_AUTORIZADO.getMessage()));
 
         mockMvc.perform(get("/api/usuario/buscar")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", authHeader))
+                        .header("Authorization", authHeader)
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("nome", "teste"))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.USUARIO_NAO_AUTORIZADO.getMessage()));
     }

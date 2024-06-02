@@ -162,7 +162,7 @@ public class UsuarioServiceTest {
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(usuarioRepository.findAll(any(Pageable.class))).thenReturn(usuarioPagina);
 
-        Page<UsuarioSaidaDTO> response = usuarioService.findAll(page, size, authHeader);
+        Page<UsuarioSaidaDTO> response = usuarioService.findAll(page, size, authHeader, null);
 
         assertNotNull(response);
         assertEquals(usuarios.size(), response.getContent().size());
