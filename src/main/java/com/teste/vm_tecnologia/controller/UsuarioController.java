@@ -4,6 +4,7 @@ import com.teste.vm_tecnologia.dto.UsuarioEntradaDTO;
 import com.teste.vm_tecnologia.dto.UsuarioSaidaDTO;
 import com.teste.vm_tecnologia.model.APIResponse;
 import com.teste.vm_tecnologia.model.enums.MessageEnum;
+import com.teste.vm_tecnologia.model.exceptions.UnauthorizedException;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioJaExisteException;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioNaoExisteException;
 import com.teste.vm_tecnologia.service.UsuarioService;
@@ -53,13 +54,13 @@ public class UsuarioController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuário encontrado com sucesso."),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado."),
-            @ApiResponse(responseCode = "403", description = "Usuário não autorizado."),
+            @ApiResponse(responseCode = "401", description = "Usuário não autorizado."),
             @ApiResponse(responseCode = "500", description = "Erro ao buscar usuário.")
     })
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<APIResponse<UsuarioSaidaDTO>> findById(@PathVariable Long id){
+    public ResponseEntity<APIResponse<UsuarioSaidaDTO>> findById(@PathVariable Long id, @RequestHeader("Authorization") String authorization){
         try {
-            APIResponse<UsuarioSaidaDTO> response = usuarioService.findById(id);
+            APIResponse<UsuarioSaidaDTO> response = usuarioService.findById(id, authorization);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (UsuarioNaoExisteException e) {
             return new ResponseEntity<>(
@@ -68,6 +69,14 @@ public class UsuarioController {
                             null
                     ),
                     HttpStatus.NOT_FOUND
+            );
+        } catch (UnauthorizedException e) {
+            return new ResponseEntity<>(
+                    new APIResponse<>(
+                            e.getMessage(),
+                            null
+                    ),
+                    HttpStatus.UNAUTHORIZED
             );
         } catch (Exception e) {
             return new ResponseEntity<>(
