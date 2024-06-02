@@ -120,6 +120,24 @@ public class UserControllerTest {
     }
 
     @Test
+    public void buscarUsuarioPeloIdFalhaUnauthorized() throws UsuarioNaoExisteException, Exception, UnauthorizedException {
+        Long id = 1L;
+        String authHeader = "Basic ZW1haWwyQGVtYWlsLmNvbTpzZW5oYQ==";
+        UsuarioSaidaDTO usuarioSaidaDTO = new UsuarioSaidaDTO();
+        usuarioSaidaDTO.setId(id);
+        usuarioSaidaDTO.setEmail("teste@teste.com");
+
+        APIResponse<UsuarioSaidaDTO> response = new APIResponse<>(MessageEnum.USUARIO_NAO_AUTORIZADO.getMessage(), usuarioSaidaDTO);
+        when(usuarioService.findById(anyLong(), anyString())).thenThrow(new UnauthorizedException(MessageEnum.USUARIO_NAO_AUTORIZADO.getMessage()));
+
+        mockMvc.perform(get("/api/usuario/buscar/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", authHeader))
+                        .andExpect(MockMvcResultMatchers.status().isUnauthorized())
+                        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.USUARIO_NAO_AUTORIZADO.getMessage()));
+    }
+
+    @Test
     public void buscarUsuarioPeloIdSucesso() throws UsuarioNaoExisteException, Exception, UnauthorizedException {
         Long id = 1L;
         String authHeader = "Basic ZW1haWwyQGVtYWlsLmNvbTpzZW5oYQ==";
@@ -135,8 +153,6 @@ public class UserControllerTest {
                         .header("Authorization", authHeader))
                         .andExpect(MockMvcResultMatchers.status().isOk())
                         .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage()));
-
-
     }
 
     @Test
@@ -189,6 +205,4 @@ public class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.LISTA_VAZIA.getMessage()));
 
     }
-
-
 }
