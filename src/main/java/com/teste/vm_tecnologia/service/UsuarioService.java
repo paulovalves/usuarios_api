@@ -59,8 +59,8 @@ public class UsuarioService {
 
             return new APIResponse<>("Usuário salvo com sucesso.", usuarioSaidaDTO);
         } catch (Exception e) {
-            System.err.println(MessageEnum.ERRO_SALVAR_USUARIO + e.getMessage());
-            throw new RuntimeException(MessageEnum.ERRO_SALVAR_USUARIO.getMessage());
+            System.err.println(e.getMessage());
+            throw new RuntimeException(e.getLocalizedMessage());
         }
     }
 
