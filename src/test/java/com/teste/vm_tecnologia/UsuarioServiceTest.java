@@ -135,6 +135,13 @@ public class UsuarioServiceTest {
     public void buscarTodosUsuariosExiste() throws UnauthorizedException {
         int page = 0;
         int size = 10;
+        Long id = 1L;
+        String plainPassword = "senha";
+        String encodedPassword = realPasswordEncoder.encode(plainPassword);
+        Usuario usuario = new Usuario();
+        usuario.setId(id);
+        usuario.setEmail("test@test.com");
+        usuario.setSenha(encodedPassword);
         String authHeader = "Basic ZW1haWwyQGVtYWlsLmNvbTpzZW5oYQ==";
         Pageable pageable = PageRequest.of(page, size);
         List<Usuario> usuarios = Arrays.asList(
@@ -142,7 +149,13 @@ public class UsuarioServiceTest {
         );
 
         Page<Usuario> usuarioPagina = new PageImpl<>(usuarios, pageable, usuarios.size());
-
+        when(userDetailsService.loadUserByUsername(anyString())).thenReturn(
+                User.builder()
+                        .username("test@test.com")
+                        .password(encodedPassword)
+                        .build()
+        );
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(usuarioRepository.findAll(any(Pageable.class))).thenReturn(usuarioPagina);
 
         Page<UsuarioSaidaDTO> response = usuarioService.findAll(page, size, authHeader);
