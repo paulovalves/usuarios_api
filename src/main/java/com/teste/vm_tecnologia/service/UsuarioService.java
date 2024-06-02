@@ -9,31 +9,24 @@ import com.teste.vm_tecnologia.model.exceptions.UnauthorizedException;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioJaExisteException;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioNaoExisteException;
 import com.teste.vm_tecnologia.repository.UsuarioRepository;
+import com.teste.vm_tecnologia.utils.SecurityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Optional;
 
 @Service
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    private final PasswordEncoder passwordEncoder;
-    private UserDetailsService userDetailsService;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, UserDetailsService userDetailsService) {
+    private final SecurityUtils securityUtils;
+    public UsuarioService(UsuarioRepository usuarioRepository, SecurityUtils securityUtils) {
         this.usuarioRepository = usuarioRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
-        this.userDetailsService = userDetailsService;
+        this.securityUtils = securityUtils;
     }
 
 
@@ -43,7 +36,7 @@ public class UsuarioService {
         Usuario usuario = Usuario.builder()
                 .nome(usuarioEntradaDTO.getNome())
                 .email(usuarioEntradaDTO.getEmail())
-                .senha(passwordEncoder.encode(usuarioEntradaDTO.getSenha()))
+                .senha(securityUtils.encodePassword(usuarioEntradaDTO.getSenha()))
                 .build();
         Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(usuario.getEmail());
         if (usuarioExistente.isPresent() && usuarioExistente.get().getEmail() != null) {
@@ -71,7 +64,7 @@ public class UsuarioService {
                 throw new UsuarioNaoExisteException(MessageEnum.USUARIO_NAO_ENCONTRADO.getMessage());
             }
 
-            checkCreds(authorizationHeader);
+            securityUtils.checkCreds(authorizationHeader);
 
             UsuarioSaidaDTO usuarioSaidaDTO = UsuarioSaidaDTO.from(usuario.get());
             return new APIResponse<>(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage(), usuarioSaidaDTO);
@@ -82,22 +75,13 @@ public class UsuarioService {
         }
     }
 
-    private void checkCreds(String authorizationHeader) throws UnauthorizedException {
-        String[] credentials = extractCredentialsFromHeader(authorizationHeader);
-        String email = credentials[0];
-        String senha = credentials[1];
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-        if(!passwordEncoder.matches(senha, userDetails.getPassword())) {
-            throw new UnauthorizedException("senha inválido.");
-        }
-    }
 
     public Page<UsuarioSaidaDTO> findAll(int page, int size, String authorizationHeader) throws UnauthorizedException {
         Pageable pageable = PageRequest.of(page, size);
         try {
 
-            checkCreds(authorizationHeader);
+            securityUtils.checkCreds(authorizationHeader);
             Page<Usuario> usuarios = usuarioRepository.findAll(pageable);
             return usuarios.map(UsuarioSaidaDTO::from);
         } catch (UnauthorizedException e) {
@@ -108,14 +92,5 @@ public class UsuarioService {
         }
     }
 
-    private String[] extractCredentialsFromHeader(String authHeader) throws UnauthorizedException {
-        if(authHeader == null || !authHeader.startsWith("Basic ")) {
-            throw new UnauthorizedException(MessageEnum.USUARIO_NAO_AUTORIZADO.getMessage());
-        }
 
-        String base64Credentials = authHeader.substring(6);
-        byte[] decodedBytes = Base64.getDecoder().decode(base64Credentials);
-        String decodedCreds = new String(decodedBytes, StandardCharsets.UTF_8);
-        return decodedCreds.split(":", 2);
-    }
 }

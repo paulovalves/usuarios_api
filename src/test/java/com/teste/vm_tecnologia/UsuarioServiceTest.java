@@ -10,6 +10,7 @@ import com.teste.vm_tecnologia.model.exceptions.UsuarioJaExisteException;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioNaoExisteException;
 import com.teste.vm_tecnologia.repository.UsuarioRepository;
 import com.teste.vm_tecnologia.service.UsuarioService;
+import com.teste.vm_tecnologia.utils.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,6 +48,9 @@ public class UsuarioServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private UsuarioRepository usuarioRepository;
+
+    @Mock
+    private SecurityUtils securityUtils;
 
     private PasswordEncoder realPasswordEncoder = new BCryptPasswordEncoder();
 

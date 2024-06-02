@@ -11,28 +11,39 @@ import com.teste.vm_tecnologia.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
+/**
+ * Classe controller para operações relacionada ao Usuário.
+ */
 @RestController
 @RequestMapping("/api/usuario")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    /**
+     * Construtor da classe UsuarioController.
+     *
+     * @param usuarioService O serviço de usuário a ser utilizado.
+     */
 
     public UsuarioController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
     }
 
-
+    /**
+     * Endpoint para cadastrar um novo usuário.
+     *
+     * @param usuarioEntradaDTO {@link UsuarioEntradaDTO} O DTO de entrada do usuário.
+     * @return Uma resposta da API contendo o DTO de saída do usuário.
+     */
     @PostMapping("/salvar")
     @Operation(summary = "Cadastra um usuário", description = "Cadastra um novo usuário.")
     @ApiResponses(value = {
@@ -44,12 +55,6 @@ public class UsuarioController {
         try {
             APIResponse<UsuarioSaidaDTO> response = usuarioService.save(usuarioEntradaDTO);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (ConstraintViolationException e) {
-            return new ResponseEntity<>(
-                    new APIResponse<>(
-                            e.getMessage(),
-                            null),
-                    HttpStatus.BAD_REQUEST);
         } catch (ValidationException | UsuarioJaExisteException e) {
             return new ResponseEntity<>(
                     new APIResponse<>(
@@ -65,6 +70,13 @@ public class UsuarioController {
         }
     }
 
+    /**
+     * Endpoint para buscar um usuário pelo ID.
+     *
+     * @param id O ID do usuário a ser buscado.
+     * @param authorization O cabeçalho de autorização.
+     * @return Uma resposta da API contendo o DTO de saída do usuário.
+     */
     @GetMapping("/buscar/{id}")
     @Operation(summary = "Busca um usuário pelo id", description = "Busca um usuário pelo id.")
     @ApiResponses(value = {
@@ -105,6 +117,14 @@ public class UsuarioController {
         }
     }
 
+    /**
+     * Endpoint para buscar todos os usuários.
+     *
+     * @param page A página a ser retornada.
+     * @param size O tamanho da página a ser retornada.
+     * @param authorizationHeader O cabeçalho de autorização.
+     * @return Uma resposta da API contendo uma página de DTOs de saída do usuário.
+     */
     @GetMapping("/buscar")
     @Operation(summary = "Busca todos os usuários", description = "Busca todos os usuários e retorna uma página.")
     @ApiResponses(value = {
