@@ -80,12 +80,16 @@ public class UsuarioService {
 
 
 
-    public Page<UsuarioSaidaDTO> findAll(int page, int size, String authorizationHeader) throws UnauthorizedException {
+    public Page<UsuarioSaidaDTO> findAll(int page, int size, String authorizationHeader, String nome) throws UnauthorizedException {
         Pageable pageable = PageRequest.of(page, size);
         try {
-
             securityUtils.checkCreds(authorizationHeader);
-            Page<Usuario> usuarios = usuarioRepository.findAll(pageable);
+            Page<Usuario> usuarios;
+            if(nome == null || nome.isEmpty()) {
+                usuarios = usuarioRepository.findAll(pageable);
+            } else {
+                usuarios = usuarioRepository.findByNomeContainingIgnoreCase(nome, pageable);
+            }
             return usuarios.map(UsuarioSaidaDTO::from);
         } catch (UnauthorizedException e) {
             throw new UnauthorizedException(e.getMessage());

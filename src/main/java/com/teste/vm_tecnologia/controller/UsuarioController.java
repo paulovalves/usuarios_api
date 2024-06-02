@@ -137,11 +137,12 @@ public class UsuarioController {
     public ResponseEntity<APIResponse<Page<UsuarioSaidaDTO>>> findAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "2") int size,
+            @RequestParam(required = false) String nome,
             @RequestHeader("Authorization") String authorizationHeader
             ) {
 
         try {
-            var response = usuarioService.findAll(page, size, authorizationHeader);
+            var response = usuarioService.findAll(page, size, authorizationHeader, nome);
             return new ResponseEntity<>(
                     new APIResponse<>(
                             response.getContent().isEmpty() ?
