@@ -136,6 +136,26 @@ public class UserControllerTest {
     }
 
     @Test
+    public void SalvarUsuarioComFalhaSemNome() throws Exception, UsuarioJaExisteException {
+        UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO();
+        usuarioEntradaDTO.setNome("Teste");
+        usuarioEntradaDTO.setEmail("teste@teste.com");
+
+        when(usuarioService.save(any(UsuarioEntradaDTO.class))).thenThrow(new UsuarioJaExisteException(MessageEnum.ERRO_SALVAR_USUARIO.getMessage()));
+
+        mockMvc.perform(post("/api/usuario/salvar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+
+                                {
+                            "nome": "Teste",
+                            "email": "teste@teste.com"
+                        }"""))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.ERRO_SALVAR_USUARIO.getMessage() + " " + MessageEnum.SENHA_OBRIGATORIA.getMessage()));
+    }
+
+    @Test
     public void SalvarUsuarioComFalhaRetornaInteralServerError() throws UsuarioJaExisteException, Exception {
         UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO();
         usuarioEntradaDTO.setNome("Teste");
