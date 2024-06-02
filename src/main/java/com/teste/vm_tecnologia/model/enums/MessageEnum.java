@@ -10,7 +10,11 @@ public enum MessageEnum {
     SUCESSO_BUSCAR_USUARIOS("Usuários encontrados."),
     ERRO_BUSCAR_USUARIOS("Erro ao buscar usuários."),
     LISTA_VAZIA("Nenhum usuário encontrado."),
-    USUARIO_NAO_AUTORIZADO("Usuário não autorizado");
+    USUARIO_NAO_AUTORIZADO("Usuário não autorizado."),
+    EMAIL_OBRIGATORIO("O campo email é obrigatório."),
+    SENHA_OBRIGATORIA("O campo senha é obrigatório"),
+    EMAIL_INVALIDO("Email inválido."),
+    NOME_OBRIGATORIO("O campo nome é obrigatório.");
     private final String message;
 
     MessageEnum(String message) {
