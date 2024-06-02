@@ -8,8 +8,10 @@ import com.teste.vm_tecnologia.dto.UsuarioSaidaDTO;
 import com.teste.vm_tecnologia.model.APIResponse;
 import com.teste.vm_tecnologia.model.Usuario;
 import com.teste.vm_tecnologia.model.enums.MessageEnum;
+import com.teste.vm_tecnologia.model.exceptions.UnauthorizedException;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioJaExisteException;
 import com.teste.vm_tecnologia.model.exceptions.UsuarioNaoExisteException;
+import com.teste.vm_tecnologia.repository.UsuarioRepository;
 import com.teste.vm_tecnologia.service.UsuarioService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,7 +49,8 @@ public class UserControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private UsuarioService usuarioService;
-
+    @MockBean
+    private UsuarioRepository usuarioRepository;
     @Test
     public void SalvarUsuarioComSucesso() throws Exception, UsuarioJaExisteException {
         UsuarioEntradaDTO usuarioEntradaDTO = new UsuarioEntradaDTO();
@@ -117,33 +120,36 @@ public class UserControllerTest {
     }
 
     @Test
-    public void buscarUsuarioPeloIdSucesso() throws UsuarioNaoExisteException, Exception {
+    public void buscarUsuarioPeloIdSucesso() throws UsuarioNaoExisteException, Exception, UnauthorizedException {
         Long id = 1L;
+        String authHeader = "Basic ZW1haWwyQGVtYWlsLmNvbTpzZW5oYQ==";
         UsuarioSaidaDTO usuarioSaidaDTO = new UsuarioSaidaDTO();
         usuarioSaidaDTO.setId(id);
         usuarioSaidaDTO.setEmail("teste@teste.com");
 
         APIResponse<UsuarioSaidaDTO> response = new APIResponse<>(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage(), usuarioSaidaDTO);
-        when(usuarioService.findById(anyLong())).thenReturn(response);
+        when(usuarioService.findById(anyLong(), anyString())).thenReturn(response);
 
         mockMvc.perform(get("/api/usuario/buscar/{id}", id)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage()));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", authHeader))
+                        .andExpect(MockMvcResultMatchers.status().isOk())
+                        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.SUCESSO_BUSCAR_USUARIO.getMessage()));
 
 
     }
 
     @Test
-    public void buscarUsuarioPeloIdFalhaNaoEncontrado() throws UsuarioNaoExisteException, Exception {
+    public void buscarUsuarioPeloIdFalhaNaoEncontrado() throws UsuarioNaoExisteException, Exception, UnauthorizedException {
         Long id = 2L;
-
-        when(usuarioService.findById(anyLong())).thenThrow(new UsuarioNaoExisteException(MessageEnum.ERRO_BUSCAR_USUARIO.getMessage()));
+        String authHeader = "Basic ZW1haWwyQGVtYWlsLmNvbTpzZW5oYQ==";
+        when(usuarioService.findById(anyLong(), anyString())).thenThrow(new UsuarioNaoExisteException(MessageEnum.ERRO_BUSCAR_USUARIO.getMessage()));
 
         mockMvc.perform(get("/api/usuario/buscar/{id}", id)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isNotFound())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.ERRO_BUSCAR_USUARIO.getMessage()));
+                        .header("Authorization", authHeader)
+                        .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(MockMvcResultMatchers.status().isNotFound())
+                        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.ERRO_BUSCAR_USUARIO.getMessage()));
 
     }
 
