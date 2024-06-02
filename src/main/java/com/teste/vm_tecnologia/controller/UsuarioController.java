@@ -116,9 +116,12 @@ public class UsuarioController {
     @SecurityRequirement(name = "BasicAuth")
     public ResponseEntity<APIResponse<Page<UsuarioSaidaDTO>>> findAll(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "2") int size) {
+            @RequestParam(defaultValue = "2") int size,
+            @RequestHeader("Authorization") String authorizationHeader
+            ) {
+
         try {
-            var response = usuarioService.findAll(page, size);
+            var response = usuarioService.findAll(page, size, authorizationHeader);
             return new ResponseEntity<>(
                     new APIResponse<>(
                             response.getContent().isEmpty() ?
@@ -129,6 +132,14 @@ public class UsuarioController {
                     HttpStatus.OK
             );
 
+        }  catch (UnauthorizedException e) {
+            return new ResponseEntity<>(
+                    new APIResponse<>(
+                            e.getMessage(),
+                            null
+                    ),
+                    HttpStatus.UNAUTHORIZED
+            );
         } catch (Exception e) {
             return new ResponseEntity<>(
                     new APIResponse<>(

@@ -93,11 +93,15 @@ public class UsuarioService {
         }
     }
 
-    public Page<UsuarioSaidaDTO> findAll(int page, int size) {
+    public Page<UsuarioSaidaDTO> findAll(int page, int size, String authorizationHeader) throws UnauthorizedException {
         Pageable pageable = PageRequest.of(page, size);
         try {
+
+            checkCreds(authorizationHeader);
             Page<Usuario> usuarios = usuarioRepository.findAll(pageable);
             return usuarios.map(UsuarioSaidaDTO::from);
+        } catch (UnauthorizedException e) {
+            throw new UnauthorizedException(e.getMessage());
         } catch (Exception e) {
             System.err.println(MessageEnum.ERRO_BUSCAR_USUARIOS + e.getMessage());
             throw new RuntimeException(MessageEnum.ERRO_BUSCAR_USUARIOS.getMessage());
