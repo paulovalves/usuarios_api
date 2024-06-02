@@ -24,9 +24,12 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
 
     private final SecurityUtils securityUtils;
-    public UsuarioService(UsuarioRepository usuarioRepository, SecurityUtils securityUtils) {
+
+    private final EmailService emailService;
+    public UsuarioService(UsuarioRepository usuarioRepository, SecurityUtils securityUtils, EmailService emailService) {
         this.usuarioRepository = usuarioRepository;
         this.securityUtils = securityUtils;
+        this.emailService = emailService;
     }
 
 
@@ -49,7 +52,7 @@ public class UsuarioService {
                     .nome(response.getNome())
                     .email(response.getEmail())
                     .build();
-
+            emailService.sendEmail(usuario.getEmail(), "Cadastro realizado com sucesso", "Seja bem-vindo ao nosso sistema!");
             return new APIResponse<>("Usuário salvo com sucesso.", usuarioSaidaDTO);
         } catch (Exception e) {
             System.err.println(e.getMessage());
