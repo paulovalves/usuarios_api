@@ -43,8 +43,10 @@ public class SecurityConfig implements UserDetailsService{
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers(HttpMethod.GET, "/api/usuario/buscar", "/api/usuario/buscar/{id}").authenticated()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/webjars/**", "/swagger-resources/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/usuario/salvar").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/usuario/buscar", "/api/usuario/buscar/{id}").authenticated()
+                        .anyRequest().authenticated()
                 ).httpBasic(Customizer.withDefaults());
         return http.build();
     }
