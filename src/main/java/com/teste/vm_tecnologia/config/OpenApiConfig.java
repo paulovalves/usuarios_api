@@ -21,13 +21,8 @@ public class OpenApiConfig {
                                 .name("Paulo Alves")
                                 .url("https://www.linkedin.com/in/paulo-victor-alves")
                                 .email("paulovalves@outlook.com"))
-                )
-                .addSecurityItem(new SecurityRequirement().addList("basicAuth"))
-                .components(new io.swagger.v3.oas.models.Components().addSecuritySchemes("basicAuth",
-                        new io.swagger.v3.oas.models.security.SecurityScheme()
-                                .type(io.swagger.v3.oas.models.security.SecurityScheme.Type.HTTP)
-                                .scheme("basic")
-                                .description("Basic authentication"))
                 );
+
+
     }
 }
