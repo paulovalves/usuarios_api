@@ -9,7 +9,8 @@ public enum MessageEnum {
     USUARIO_NAO_ENCONTRADO("Usuário não foi encontrado."),
     SUCESSO_BUSCAR_USUARIOS("Usuários encontrados."),
     ERRO_BUSCAR_USUARIOS("Erro ao buscar usuários."),
-    LISTA_VAZIA("Nenhum usuário encontrado.");
+    LISTA_VAZIA("Nenhum usuário encontrado."),
+    USUARIO_NAO_AUTORIZADO("Usuário não autorizado");
     private final String message;
 
     MessageEnum(String message) {
