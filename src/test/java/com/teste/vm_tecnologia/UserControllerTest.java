@@ -229,9 +229,10 @@ public class UserControllerTest {
     }
 
     @Test
-    public void buscarTodosUsuariosSucesso() throws Exception {
+    public void buscarTodosUsuariosSucesso() throws Exception, UnauthorizedException {
         int page = 0;
         int size = 10;
+        String authHeader = "Basic ZW1haWwyQGVtYWlsLmNvbTpzZW5oYQ==";
         Pageable pageable = PageRequest.of(page, size);
         List<Usuario> usuarios = Arrays.asList(
                 new Usuario(), new Usuario(), new Usuario()
@@ -239,29 +240,51 @@ public class UserControllerTest {
 
         Page<Usuario> response = new PageImpl<>(usuarios, pageable, usuarios.size());
         var saida = response.map(UsuarioSaidaDTO::from);
-        when(usuarioService.findAll(anyInt(),anyInt())).thenReturn(saida);
+        when(usuarioService.findAll(anyInt(),anyInt(),anyString())).thenReturn(saida);
 
         mockMvc.perform(get("/api/usuario/buscar")
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", authHeader))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.SUCESSO_BUSCAR_USUARIOS.getMessage()));
     }
 
     @Test
-    public void buscarTodosUsuariosListaVazia() throws Exception {
+    public void buscarTodosUsuariosListaVazia() throws Exception, UnauthorizedException {
         int page = 0;
         int size = 10;
+        String authHeader = "Basic ZW1haWwyQGVtYWlsLmNvbTpzZW5oYQ==";
         Pageable pageable = PageRequest.of(page, size);
         List<Usuario> usuarios = List.of();
 
         Page<Usuario> response = new PageImpl<>(usuarios, pageable, 0);
         var saida = response.map(UsuarioSaidaDTO::from);
-        when(usuarioService.findAll(anyInt(), anyInt())).thenReturn(saida);
+        when(usuarioService.findAll(anyInt(), anyInt(), anyString())).thenReturn(saida);
 
         mockMvc.perform(get("/api/usuario/buscar")
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", authHeader))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.LISTA_VAZIA.getMessage()));
 
+    }
+
+    @Test
+    public void buscarTodosUsuariosNaoAutorizado() throws UnauthorizedException, Exception {
+        int page = 0;
+        int size = 10;
+        String authHeader = "Basic ZW1haWwyQGVbTpzZW5oYQ==";
+        Pageable pageable = PageRequest.of(page, size);
+        List<Usuario> usuarios = List.of();
+
+        Page<Usuario> response = new PageImpl<>(usuarios, pageable, 0);
+        var saida = response.map(UsuarioSaidaDTO::from);
+        when(usuarioService.findAll(anyInt(), anyInt(), anyString())).thenThrow(new UnauthorizedException(MessageEnum.USUARIO_NAO_AUTORIZADO.getMessage()));
+
+        mockMvc.perform(get("/api/usuario/buscar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", authHeader))
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(MessageEnum.USUARIO_NAO_AUTORIZADO.getMessage()));
     }
 }

@@ -132,9 +132,10 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void buscarTodosUsuariosExiste() {
+    public void buscarTodosUsuariosExiste() throws UnauthorizedException {
         int page = 0;
         int size = 10;
+        String authHeader = "Basic ZW1haWwyQGVtYWlsLmNvbTpzZW5oYQ==";
         Pageable pageable = PageRequest.of(page, size);
         List<Usuario> usuarios = Arrays.asList(
                 new Usuario(), new Usuario(), new Usuario()
@@ -144,7 +145,7 @@ public class UsuarioServiceTest {
 
         when(usuarioRepository.findAll(any(Pageable.class))).thenReturn(usuarioPagina);
 
-        Page<UsuarioSaidaDTO> response = usuarioService.findAll(page, size);
+        Page<UsuarioSaidaDTO> response = usuarioService.findAll(page, size, authHeader);
 
         assertNotNull(response);
         assertEquals(usuarios.size(), response.getContent().size());
