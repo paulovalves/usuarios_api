@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="controller" type="JUnit" factoryName="JUnit">
+    <module name="vm_tecnologia" />
+    <option name="PACKAGE_NAME" value="com.teste.vm_tecnologia" />
+    <option name="MAIN_CLASS_NAME" value="com.teste.vm_tecnologia.UserControllerTest" />
+    <option name="METHOD_NAME" value="" />
+    <option name="TEST_OBJECT" value="class" />
+    <option name="VM_PARAMETERS" value="-ea -XX:-UseSharedSpaces" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
